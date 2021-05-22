@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Pendaftaran Mandiri
- * Plugin URI: -
+ * Plugin URI: https://github.com/idoalit/pendaftaran-mandiri
  * Description: Pendaftaran mandiri di OPAC
  * Version: 1.0.0
  * Author: Waris Agung Widodo
