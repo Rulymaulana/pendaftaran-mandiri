@@ -20,6 +20,8 @@
  *
  */
 
+use SLiMS\DB;
+
 defined('INDEX_AUTH') OR die('Direct access not allowed!');
 
 // IP based access limitation
@@ -40,6 +42,67 @@ if (!$can_read) {
     die('<div class="errorBox">' . __('You are not authorized to view this section') . '</div>');
 }
 
+if (isset($_POST['member_name'])) {
+    $data['member_id'] = utility::filterData('member_id', 'post');
+    $data['member_name'] = utility::filterData('member_name', 'post');
+    $data['member_email'] = utility::filterData('member_email', 'post');
+    $data['is_new'] = 1;
+    $data['is_pending'] = 1;
+    $data['gender'] = 1;
+    $data['expire_date'] = date('Y-m-d H:i:s');
+
+    // simpan ke table member
+    require_once SIMBIO . 'simbio_DB/simbio_dbop.inc.php';
+    $sql_op = new simbio_dbop(DB::getInstance('mysqli'));
+    $insert = $sql_op->insert('member', $data);
+
+    if($insert) {
+        echo '<div class="alert alert-secondary" role="alert">sukses</div>';
+        $pm_id = utility::filterData('pm_ID', 'post');
+        $hapus = DB::getInstance()->query(sprintf("delete from pendaftaran_mandiri where member_id = '%s'", $pm_id));
+        if ($hapus) {
+            echo '<div class="alert alert-secondary" role="alert">data di pendaftaran mandiri sudah dihapus</div>';
+        } else {
+            echo '<div class="alert alert-danger" role="alert">data di pendaftaran manditi GAGAL dihapus</div>';
+        }
+    } else {
+        echo '<div class="alert alert-danger" role="alert">gagal menyimpan data. error : ' . $sql_op->error . '</div>';
+    }
+
+    exit();
+}
+
+if(isset($_GET['member_id'])) {
+    $member_id = utility::filterData('member_id');
+    $member_q = DB::getInstance()->query(sprintf("SELECT * FROM pendaftaran_mandiri WHERE member_id = '%s'", $member_id));
+    $member = $member_q->fetch(\PDO::FETCH_OBJ);
+
+    $url_action = $_SERVER['PHP_SELF'] . '?' . http_build_query(['mod' => $_GET['mod'], 'id' => $_GET['id'], 'member_id' => $member_id]);
+
+    echo <<<HTML
+<div class="container-fluid">
+<form action="{$url_action}" method="post" class="submitViaAJAX">
+<input type="hidden" name="pm_ID" value="{$member_id}">
+<div class="mb-3">
+    <label for="memberid" class="form-label">Nama Anggota</label>
+    <input name="member_id" type="text" class="form-control" id="memberid" value="{$member->member_id}">
+  </div>
+  <div class="mb-3">
+    <label for="namaanggota" class="form-label">Nama Anggota</label>
+    <input name="member_name" type="text" class="form-control" id="namaanggota" value="{$member->member_name}">
+  </div>
+  <div class="mb-3">
+    <label for="exampleInputEmail1" class="form-label">Email address</label>
+    <input name="member_email" type="email" class="form-control" id="exampleInputEmail1" value="{$member->member_email}">
+  </div>
+  <button type="submit" class="btn btn-primary">Simpan</button>
+</form>
+</div>
+HTML;
+
+exit();
+}
+
 ?>
     <div class="menuBox">
         <div class="menuBoxInner printIcon">
@@ -54,9 +117,9 @@ if (!$can_read) {
 $grid = new simbio_datagrid();
 $grid->setSQLColumn('member_id', 'member_name', 'member_email', 'input_date', 'member_id');
 function lihat($dbs, $data, $index) {
-    $adm = AWB;
+    $adm = $_SERVER['PHP_SELF'] . '?' . http_build_query(['mod' => $_GET['mod'], 'id' => $_GET['id'], 'member_id' => $data[$index]]);
     return <<<HTML
-<a class="btn-sm btn btn-primary" href="{$adm}/modules/membership/index.php?itemID={$data[$index]}&amp;detail=true&amp;ajaxload=1&amp;" postdata="itemID={$data[$index]}&amp;detail=true" title="LIHAT">LIHAT</a>
+<a class="btn-sm btn btn-primary" href="{$adm}" title="LIHAT">LIHAT</a>
 HTML;
 }
 $grid->modifyColumnContent(4, 'callback{lihat}');

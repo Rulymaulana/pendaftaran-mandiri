@@ -31,13 +31,12 @@ class CreatePendaftaranMandiri extends \SLiMS\Migration\Migration
     function up()
     {
         \SLiMS\DB::getInstance()->query("CREATE TABLE `pendaftaran_mandiri` (
-          `member_id` int(11) NOT NULL AUTO_INCREMENT,
-          `member_name` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-          `member_email` varchar(255) COLLATE utf8mb4_unicode_ci NULL,
-          `member_address` text collate utf8mb4_unicode_ci NULL,
-          `input_date` datetime NOT NULL,
-          PRIMARY KEY (`member_id`)
-        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+            `member_id` varchar(20) COLLATE 'utf8mb4_unicode_ci' NOT NULL,
+            `member_name` varchar(255) COLLATE 'utf8mb4_unicode_ci' NOT NULL,
+            `member_email` varchar(255) COLLATE 'utf8mb4_unicode_ci' NOT NULL,
+            `member_address` text COLLATE 'utf8mb4_unicode_ci' NOT NULL,
+            `input_date` timestamp NOT NULL
+          ) ENGINE='MyISAM' COLLATE 'utf8mb4_unicode_ci';");
     }
 
     /**

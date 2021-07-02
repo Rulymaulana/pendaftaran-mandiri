@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @Created by          : Waris Agung Widodo (ido.alit@gmail.com)
  * @Date                : 21/05/2021 14:44
@@ -20,53 +21,71 @@
  *
  */
 
+use SLiMS\DB;
+
 // check apakah ada yang mengirimkan data
 $error_message = '';
 $berhasil_simpan = null;
 if (isset($_POST['daftar_mandiri'])) {
 
-    // mendapatkan data yang dikirim
-//    $data['member_id'] = date('YmdHis');
-    $data['member_name'] =  utility::filterData('nama_lengkap', 'post', true, true, true);
-    $data['member_email'] = utility::filterData('email', 'post', true, true, true);
-    $data['member_address'] = utility::filterData('alamat', 'post', true, true, true);
-//    $data['is_new'] = 1;
-//    $data['is_pending'] = 1;
-//    $data['gender'] = 1;
-//    $data['expire_date'] = date('Y-m-d H:i:s');
-    $data['input_date'] = date('Y-m-d H:i:s');
+    $data['member_id'] = utility::filterData('npm', 'post', true, true, true);
 
-    // simpan ke database table member
-    require_once SIMBIO . '/simbio_DB/simbio_dbop.inc.php';
-    $sql_op = new simbio_dbop($dbs);
-    $insert = $sql_op->insert('pendaftaran_mandiri', $data);
-
-    if ($insert) {
-        $berhasil_simpan = true;
-    } else {
-        $berhasil_simpan = false;
-        $error_message = 'GAGAL MENYIMPAN DATA. ' . $sql_op->error;
-    }
-}
-
-if ($berhasil_simpan) {
-    echo '<div class="alert alert-success" role="alert">
-  Pendaftaran berhasil!
+    // cek apakah di table member sudah ada ID ini
+    $member_qm = DB::getInstance()->query(sprintf("select * from member where member_id = '%s'", $data['member_id']));
+    if ($member_qm->rowCount()) {
+        echo '<div class="alert alert-danger" role="alert">
+  Anda sudah terdaftar. Silahkan hubungi petugas untuk info lebih lanjut.
 </div>';
-} else if (!is_null($berhasil_simpan)) {
-    echo '<div class="alert alert-danger" role="alert">'.$error_message.'</div>';
+    } else {
+
+        // mendapatkan data yang dikirim
+        //    $data['member_id'] = date('YmdHis');
+        $data['member_name'] =  utility::filterData('nama_lengkap', 'post', true, true, true);
+        $data['member_email'] = utility::filterData('email', 'post', true, true, true);
+        $data['member_address'] = utility::filterData('alamat', 'post', true, true, true);
+
+        //    $data['is_new'] = 1;
+        //    $data['is_pending'] = 1;
+        //    $data['gender'] = 1;
+        //    $data['expire_date'] = date('Y-m-d H:i:s');
+        $data['input_date'] = date('Y-m-d H:i:s');
+
+        // simpan ke database table member
+        require_once SIMBIO . '/simbio_DB/simbio_dbop.inc.php';
+        $sql_op = new simbio_dbop($dbs);
+        $insert = $sql_op->insert('pendaftaran_mandiri', $data);
+
+        if ($insert) {
+            $berhasil_simpan = true;
+        } else {
+            $berhasil_simpan = false;
+            $error_message = 'GAGAL MENYIMPAN DATA. ' . $sql_op->error;
+        }
+
+        if ($berhasil_simpan) {
+            echo '<div class="alert alert-success" role="alert">
+          Pendaftaran berhasil!
+        </div>';
+        } else if (!is_null($berhasil_simpan)) {
+            echo '<div class="alert alert-danger" role="alert">' . $error_message . '</div>';
+        }
+    }
 }
 
 ?>
 
 <form action="index.php?p=pendaftaran_mandiri" method="post">
     <div class="form-group">
+        <label for="npm">NPM</label>
+        <input type="text" class="form-control" name="npm" id=npm required>
+    </div>
+    <div class="form-group">
         <label for="exampleInputEmail1">Nama Lengkap</label>
-        <input type="text" class="form-control" name="nama_lengkap">
+        <input type="text" class="form-control" name="nama_lengkap" required>
     </div>
     <div class="form-group">
         <label for="exampleInputEmail1">Email</label>
-        <input type="email" class="form-control" name="email">
+        <input type="email" class="form-control" name="email" required>
     </div>
     <div class="form-group">
         <label for="exampleInputEmail1">Alamat</label>
